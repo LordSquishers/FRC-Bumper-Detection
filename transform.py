@@ -1,10 +1,13 @@
 import numpy as np
 import cv2
 import json
+
+import seaborn
+import matplotlib.pyplot as plt
 from PIL import Image
+from matplotlib import animation
 
-
-image = Image.open("fieldS.png")
+image = Image.open("images/fieldS.png")
 width, height = image.size
 
 with open('transformpoint.json', 'r') as transform_json:
@@ -24,21 +27,29 @@ dst_points = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, heig
 # Compute the perspective transformation matrix
 perspectivematrix = cv2.getPerspectiveTransform(src_points, dst_points)
 
-def position_correct(points):
+def position_correct(points) -> []:
     points_array = np.array([points], dtype=np.float32)
     output = cv2.perspectiveTransform(points_array, perspectivematrix)
-    return output
+    return output.tolist()
+
 
 with open('unmodout.json', 'r') as unmod_json:
     unmod = json.load(unmod_json)
-#converted output dictionary
+# converted output dictionary
 finalout = {}
 json_out = 'output.json'
 for i in range(6):
     finalout[str(i)] = position_correct(unmod[str(i)])
-with open(json_out, 'w') as output_json:
-    json.dump(finalout, output_json, indent=2)
-#calibrating the perspective matrix
+    output = np.squeeze(finalout[str(i)], axis=0)
+    plt.scatter(output[:, 0], output[:, 1])
+    plt.show()
+    break
+
+# with open(json_out, 'w') as output_json:
+#     json.dump(finalout, output_json, indent=2)
+# calibrating the perspective matrix
+
+
 """
 image = cv2.imread("calibrater.jpg")
 overlay_image = cv2.imread('fieldS.png')
